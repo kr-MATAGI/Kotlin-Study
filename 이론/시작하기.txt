@@ -1,0 +1,165 @@
+1. Kotlin은 두 가지 키워드 val 및 var를 사용하여 선언한다.
+
+**Kotlin에서 수치 데이터에 사용할 수 있는 Data Type
+- Byte, Short, Long, Float, Double
+
+	1) val
+		- 값이 변경되지 않는 변수에 사용.
+		- val을 이용하여 선언된 변수는 값을 재할당 할 수 없습니다. (let이나 const개념 정도)
+		e.g) val languageName: String = "kotlin"
+		
+	2) var
+		- 값이 변경될 수 있는 변수
+		e.g) var count: Int = 10
+			 count = 15
+
+2. 유형 추론
+ - val languageName에 초기값을 할당 할때 Kotlin 컴파일러는 할당된 값의 유형을 기반으로 유형을 추론할 수 있다. (Data Type을 추론할 수 있다)
+ - Kotlin의 유형 추론 방식은 간결성과 유형 안정성 모두를 보장한다.
+ - "Kotlin" 값이 String 유형이므로 컴파일러는 languageName 또한 String이라고 추론한다.
+ - Kotlin은 정적으로 입력되는 언어 -> 컴파일 시간에 유형이 결정되고 절대 변경되지 않는다.
+ e.g)
+	val languageName = "Kotlin"
+	val upperCaseName = languageName.toUpperCase()
+	
+	// Fails to compile
+	languageName.inc() -> Int 연산자 함수
+	
+3. Null 안전
+ - 일부 언어에서는 초기 값을 명시적으로 제공하지 않고 참조 유형 변수를 선언할 수 있다.
+   이러한 경우 변수에는 일반적으로 null 값이 포함된다.
+ - Kotlin 변수는 기본적으로 null 값을 보유할 수 없다. 즉 다음 예제는 유효하지 않다.
+   e.g)
+	// Fails to compile
+	val languageName: String = null
+ - null 값을 포함하는 변수는 nullable 유형이어야 한다. 아래 예와 같이 '?'를 변수 유형의 접미사로 지정하여 변수를 nullable로 지정할 수 있다.
+	e.g)
+		val languageName: String? = null
+ - nullable 변수는 신중하게 처리해야 한다. 아니면 심각한 NullPointerException이 발생할 위험이 있다.
+   예를 들어, 자바에서는 null 값에 관해 메서드를 호출하려고 하면 프로그램이 비정상 종료된다.
+  
+4. 조건부
+ - 조건문은 Stateful 논리를 나타내는 데 유용하지만 작성 시 반복될 수 있다.
+ - Kotlin은 반복을 피하기 위해 아래와 같이 조건문을 표현할 수 있다.
+	e.g) answerString에 명시적 유형 선언을 생략할 수 있지만 명확히 하기 위해 유형 선언을 포함하는 것이 좋다.
+	val answerString: String = if (42 == count) {
+		" I have the answer."
+	} else if( 35 < count ) {
+		"The answer is close"
+	} else {
+		"The answer eludes me."
+	}
+	
+	println(answerString)
+	
+	
+ - 조건문의 복잡도가 증가하면 if-else 표현식을 when 표현식으로 교체할 것을 고려할 수 있다.
+	e.g)
+		val answerString = when {
+			42 == count -> "I have the answer."
+			35 < count -> "The answer is close."
+			else -> "The answer eludes me."
+		}
+		
+		println(answerString)
+
+ * when 표현식의 각 분기는 조건, 화살표(->) 및 결과로 표시된다.
+   한 분기에서 다음 분기로 실행되지 않는다.
+   
+ * 스마트 변환
+  - 안전 호출 연산자 또는 null이 아닌 어설션 연산자를 사용하여 nullable 값을 처리하는 대신 아래 예와 같이 조건문을 사용하여 변수에 null 참조가 있는지 확인할 수 있다.
+	e.g) val languageName: String? = null
+		 if(null != languageName) 
+		 {
+			// No need to write languageName?.toUpperCase()
+			println(languageName.toUpperCase())
+		 }
+  - 조건부 분기 내에서 languageName은 nullable이 아닌 것으로 간주될 수 있다.
+    Kotlin에서는 분기 실행 조건에 따라 languageName은 null 값을 보유할 수 없으므로 분기 내에서
+	languageName을 nullable로 처리할 필요 없다. (null == languageName 일 경우 처리 안해도 된다?)
+
+5. 함수
+ - 하나 이상의 표현식을 함수로 그룹화 가능.
+ e.g) Int형식의 매개변수, String 형식의 결과를 반환한다.
+	fun generateAnswerString(countThreshold: Int): String {
+		val answerString = if(42 == count) {
+		
+		}
+		
+		return answerString
+	}
+
+ - 함수 선언 단순화
+  - if-else 표현식의 결과를 직접 반환하여 로컬 변수 선언을 건너뛸 수 있다.
+  e.g)
+	fun generateAnswerString(countThreshold: Int): String {
+		return if (count > countThreashold) {
+			"I have the answer"
+		} else {
+			"The answer eludes me."
+		}
+	}
+  - 반환 키워드를 할당 연산자로 바꿀 수도 있다.
+  e.g)
+	fun generateAnswerString(countThreashold: Int): String = if (count > countThreashold) {
+		"I have the answer"
+	} else {
+		"The answer eludes me."
+	}
+	
+6. 익명 함수
+ - 모든 함수에 이름이 필요하지 않다. 일부 함수는 입력과 출력에 의해 더 직접적으로 식별된다.
+   이러한 함수를 익명 함수라고 한다.
+ - 이 참조를 사용하여 나중에 익명 함수를 호출하면 익명 함수 참조를 유지할 수 있다.
+   다른 참조 유형과 마찬가지로 애플리케이션에서 참조를 전달할 수 있다.
+	e.g)
+		val stringLengthFunc : (String) -> Int = { input -> input.length }
+	  : String을 입력으로 사용하고 String 입력 길이를 Int 유형의 출력으로 반환.
+	    하지만 이 코드는 함수를 호출하지 않는다.
+		함수를 호출하여 결과를 가져올려면 이름이 지정된 함수처럼 호출 해야한다.
+		e.g)
+			val stringLengthFunc : (String) -> Int = { input -> input.length }
+			
+			val stringLength: Int = stringLengthFunc("Android")
+			
+7. 고차 함수
+ - 함수는 다른 함수를 인수로 취할 수 있다.
+ - 다른 함수를 인수로 사용하는 함수를 고차 함수라고 한다.
+ - 이 패턴은 자바에서 콜백 인터페이스를 사용할 때와 동일한 방식으로 구성요소 간에 통신하는 데 유용한다.
+ e.g)
+	fun stringMapper(str: String, mapper: (String) -> Int): Int {
+		// Invoke function
+		return mapper(str)
+	}
+	> mapper가 함수로써의 매개변수이고, Int가 최종적으로 값을 반환하는 유형으로 보임.
+	
+	: stringMapper()함수는 전달된 String 에서 Int 값을 파생하는 함수와 함께 String을 가져온다.
+    
+	> 다음과 같이 호출할 수 있다.
+	e.g)
+		stringMapper("Android", { input -> input.length } )
+		
+	> 익명 함수가 함수에 정의된 마지막 매개변수인 경우 함수를 호출하는 데 사용된 괄호 밖에서 함수를 전달할 수 있다.
+ 
+8. Class
+ 1) 속성
+	- 클래스는 속성을 사용하여 상태를 나타낸다.
+	- 속성은 getter, setter 및 backing 필드를 포함할 수 있는 클래스 수준 변수.
+	e.g) 자동차를 운전하려면 바퀴가 필요하므로 Wheel 객체 목옥을 Car의 속성으로 추가 가능
+		class Car
+		{
+			val wheels = listOf<Wheel>()
+		}
+	  > wheels는 public val 이다.
+	    즉, Car 클래스 외부에서 wheels에 액세스 할 수 있지만 재할당할 수 없다.
+
+ 2) 클래스 함수 및 캡슐화
+	- 클래스는 함수를 사용하여 동작을 모델링
+	- 함수는 상태를 수정할 수 있으므로 노출하려는 데이터만 노출할 수 있다.
+	
+9. 상호운영성
+ - Kotlin의 가장 중요한 기능 중 하나는 자바와의 유연한 상호운용성이다.
+ - Kotlin 코드는 JVM 바이트 코드로 컴파일되기 떄문에 Kotlin 코드는 자바 코드로 직접호출 될 수 있으며,
+   그 반대의 경우도 마찬가지다.
+ - 즉, 기존 자바 라이브러리를 Kotlin에서 직접 활용할 수 있다.
+ - 또한 대부분의 Android API는 자바로 작성되어 Kotlin에서 바로 호출할 수 있다.
