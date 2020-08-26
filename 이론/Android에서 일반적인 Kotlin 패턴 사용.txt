@@ -1,0 +1,210 @@
+1. 상속
+ - 서브클래스와 상위 요소 사이의 ':' 연산자를 이용하여 상속을 표시할 수 있다.
+ e.g)
+	class LoginFragment : Fragment()
+ - 이 클래스 선언에서 LoginFragment는 슈퍼 클래스 Fragment의 생성자 호출을 담당한다.
+ - LoginFragment 내에서 여러 수명 주기 콜백을 재정의하여 Fragment의 상태 변경에 응답할 수 있다.
+ - 함수를 재정의 하려면 ovveride 키워드를 사용한다.
+ e.g)
+	override fun onCreateView(
+		inflater: LayoutInflater,
+		container: ViewGroup?,
+		savedInstanceState: Bundle?
+	): Veiw? {
+		return inflater.infalte(R.layout.login_fragment, container, flase)
+	}
+	
+ - 상위 클래스에서 함수를 참조하려면 다음 예와 같이 'super' 키워드를 사용한다.
+ e.g)
+	override fun onViewCreated(view: View, savedInstanceState: Bundle?)
+	{
+		super.onViewCrated(view, savedInstanceState)
+	}
+	
+2. null 허용 여부 ㅁ및 초기화
+ - 이전 예에서 재정의된 메소드의 일부 매개변수에는 '?'가 접미사로 붙은 유형이 있다.
+ - 이것은 매개변수로 전달된 인수가 null 일 수 있다는 것을 표시한다.
+ - Kotlin에서는 객체를 선언할 때 객체의 속성을 초기화해야 한다.
+   그러면 클래스의 인스턴스를 가져올 때 엑세스 가능한 속성을 즉시 참조 가능.
+ e.g)
+	Fragment의 View 객체는 Fragment#onCreateView를 호출할 때까지 확장 준비가 되지 않으므로
+	View의 속성 초기화를 연기할 방법이 필요하다.
+	-> lateinit로 속성 초기화를 연기할 수 있다.
+	   lateinit을 사용할 때는 최대한 빨리 속성을 초기화해야 한다.
+	   
+	  e.g)
+		class LoginFragment : Fragment()
+		{
+			private lateinit var usernameEditText: EditText
+			private lateinit var passwordEditText: EditText
+			private lateinit var loginButton: Button
+			private lateinit var statusTextView: TextView
+
+			override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+				super.onViewCreated(view, savedInstanceState)
+
+				usernameEditText = view.findViewById(R.id.username_edit_text)
+				passwordEditText = view.findViewById(R.id.password_edit_text)
+				loginButton = view.findViewById(R.id.login_button)
+				statusTextView = view.findViewById(R.id.status_text_view)
+			}
+		}
+		
+
+3. SAM 변환
+ - OnclickListener 인터페이스를 구현하여 Android에서 클릭 이벤트를 수신 대기할 수 있다.
+ - Button 객체에는 OnclickListener 구현이 들어있는 setOnClickListener() 함수가 포함되어 있다.
+ - OnclickListener에는 구현해야 한느 단일 추상 메서드 onClick()이 있다.
+   setOnClickListener()는 항상 OnClickListener를 인수로 가져오고 OnClickListener에는 항상 
+   동일한 단일 추상 메소드가 있으므로 Kotlin에서는 익명함수를 사용하여 표시될 수 있다.
+ - 이 프로세스를 단일 추상 메소드 변환 혹은 SAM 변환이라고 한다.
+ - SAM 변환을 사용하면 코드가 훨씬 깔끔해질 수 있다.
+	e.g) SAM 변환을 사용하여 Button의 OnClickListener를 구현하는 방법을 보여준다.
+	loginButton.setOnClickListener {
+		val authSuccessful: Boolean = viewModel.authenticate(
+			usernameEditText.text.toString(),
+			passwordEditText.text.toString()
+		)
+		if( authSuccessful) {
+			// Navigate to next screen
+		}
+		else
+		{
+			statusTextView.text = requireContext().getString(R.string.auth_failed)
+		}
+	}
+	-> setOnClickListener()에 전달된 익명 함수 내의 코드는 사용자가 loginButton을 클릭할 때 사용된다.
+	
+4. 컴패니언 객체
+ - 컴패니언 객체는 개념적으로 유형에 연결되지만 특정 객체에 연결되지 않은 변수나 함수를 정읳나느 매커니즘을 제공.
+ - 컴패니언 객체는 변수와 메서드에 자바의 static 키워드를 사용하는 것과 유사
+	e.g) TAG는 String의 상수.
+		 LoginFragment의 각 인스턴스에 String의 고유한 인스턴스가 필요하지 않으므로 컴패니언 객체에서 정의
+		 
+		 class LoginFragment : Fragment()
+		 {
+			...
+			
+			companion object {
+				private const val TAG = "LoginFragment"
+			}
+		 }
+		
+		-> 파일 최상위 수준에서 TAG를 정의할 수 있지만 파일에도 최상위 수준에서 정의된 변수, 함수, 클래스가
+		 많을 수도 있다.
+		 컴패니언 객체는 클래스의 특정 인스턴스를 참조하지 않고 변수, 함수 및 클래스 정의를 연결하는 데 도움을 준다.
+ 
+
+
+5. 속성 위임
+ - 속성을 초기화할 때 Fragment 내에서 ViewModel에 액세스하는 것과 같이 Android의 더 일반적인 패턴을 반복할 수 있다.
+ - 과도한 중복 코드를 피하려면 Kotlin의 속성 위임 구문을 사용하면 된다.
+ e.g)
+	private val viewModel : LoginViewModel by viewModels()
+
+ - 속성 위임은 앱 전체에서 재사용할 수 있는 일반적인 구현을 제공한다.
+ - Android KTX에서 일부 속성 위임을 제공한다.
+   예를 들어 viewModels는 현재 Fragment로 범위가 지정된 ViewModel을 검색한다.
+ - 속성 위임은 리플렉션을 사용하므로 성능 오버헤드가 추가된다.
+   반면 개발 시간을 절약하는 간결한 구문이 생긴다.
+   
+6. Null 허용 여부
+ - Kotlin은 앱 전체에서 유형 안전성을 유지하는 엄격한 null 허용 여부 규칙을 제공.
+ - Kotlin에서는 객체 참조에 기본적으로 null 값이 포함 될 수 없다.
+ - null 값을 변수에 할당하려면 '?'를 기본 유형의 끝에 추가하여 null을 허용하는 변수 유형을 선언해야한다.
+ e.g)
+	val name: String? = null
+ 
+ - Android 앱을 작성할 때 Kotlin이 아닌 코드를 호출해야 하는 경우도 많다.
+ - Android API 가 대부분 자바 프로그래밍 언어로 작성되기 때문이다.
+ - null 허용 여부는 자바와 Kotlin의 동작이 달라지는 핵심 영역.
+   (자바는 null 허용 여부 구문에서 덜 엄격하다, 자바는 주석에 의존한다.)
+ - Android 프레임워크가 주로 자바로 작성되어 있기 때문에 null 허용 여부 주석 없이 API를 호출할 때
+   이러한 시나리오가 발생할 수있다.
+   
+ * 플랫폼 유형
+ - String! 는 Kotlin 컴파일러에 특별한 의미가 없다. String!는 String 또는 String? 를 표시할 수 있고
+  컴파일러로 두 유형 중 하나의 값을 할당할 수 있다.
+  유형을 null 값을 할당하면 NullPointerException이 발생할 위험이 있다.
+  이 문제를 해결할려면 자바에서 코드를 작성할 때마다 null 허용 여부 주석을 사용해야 한다.
+  이러한 주석은 자바와 Kotlin 개발자에게 모두 도움이 된다.  
+  e.g)
+	public class Account implements Parcelable
+	{
+		public final String name;
+		public final String type;
+		private final @Nullable String accessId;
+		...
+	}
+	-> 멤버 변수 중 하나인 accessId는 @Nullable로 주석 처리되어 있어서 null 값을 보유할 수 있다는 것을 표시.
+	그러면 Kotlin은 accessId를 String?로 취급한다.
+	
+	* 변수가 null이 될 수 없다는 것을 표시하려면 @NonNull 주석을 사용.
+	e.g)
+		public class Account implements Parcelable {
+			public final @NonNull String name;
+		}
+		
+	* null 허용 여부 처리
+	- name을 잘라서 그 값의 앞이나 뒤에 공백이 표함되지 않게 하려면 Kotlin의 trim 함수를 사용하면 된다.
+	- String?를 여러 방법으로 안전하게 자를 수 있다.
+	- 이러한 방법 중 하나가 다음 예와 같이 null 이 아닌 어설션 연산자 '!!'를 사용하는 것.
+	e.g)
+		val account = Account("name", "type")
+		val accountName = account.name!!.trim()
+	-> '!!' 연산자는 왼쪽에 있는 모든 것을 null이 아닌 것으로 취급
+	   이 경우에는 name을 null이 아닌 String으로 취급하고 있따.
+	   왼쪽 표현식의 결과가 null이면 앱에서 NullPointerException이 발생한다.
+	   이 연산자는 쉽고 빠르지만 드물게 사용해야 한다. -> 코드에 NullPointerException 인스턴스를 다시 도입해야할 수 있다.
+	   
+	-> 더 안전한 선택은 다음과 같이 안전 호출 연산자 '?.'를 사용하는 것이다.
+	e.g)
+		val account = Account("name", "type")
+		val accountName = account.name?.trim()
+	-> 안전 호출 연산자를 사용하면 name이 null이 아난 경우 name?.trim()의 결과가 앞이나 뒤에 공백이 없는 이름 값.
+	   name이 null이라면 name?.trim()의 값은 null이다.
+	   즉, 이 구문을 실행할 때 앱에서 NullPointerException을 발생시킬 수 없다.
+	   
+	   안전 호출 연산자를 사용하면 NullPointerException의 발생 가능성이 방지되지만 다음 구문에 null 값을 전달한다.
+	   대신 다음 예와 같이 Elvis 연산자(?:)를 사용하여 즉시 null 사례를 처리할 수 있다.
+	   e.g)
+		val account = Account("name", "type")
+		val accountName = account.name?.trim() ?: "Default Name"
+	   -> 기본 값을 제공하는 데 유용
+	   
+	-> 다음 예와 같이 Elvis 연산자를 사용하여 함수에서 초기에 return 할 수 있다.
+	e.g)
+		fun validateAccount(account: Accout?)
+		{
+			val accountName = accout?.name?.timer() ?: "Default name"
+			
+			// account cannot be null beyond this point
+			accout ?: return
+			...
+		}
+			
+  
+7. 속성 초기화
+ - Kotlin의 속성은 기본적으로 초기화되지 않는다.
+ - 인클로징 클래스가 초기화될 때 속성이 초기화되어야 한다.
+ e.g)
+	class LoginFragment : Fragment()
+	{
+		val index: Int = 12
+	}
+	
+	이 초기화는 초기화 프로그램 블록에서도 정의할 수 있다.
+	
+	class LoginFragment : Fragment()
+	{
+		val index: Int
+		
+		init 
+		{
+			index = 12
+		}
+	}
+	
+ - lateinit 키워드를 사용하면 객체가 구성될 때 속성을 초기화하는 것을 방지할 수 있다.
+   속성을 초기화하기 전에 참조하면 Kotlin이 UnitializePropertyAccessException을 발생하므로
+   최대한 빨리 초기화 해야한다.
